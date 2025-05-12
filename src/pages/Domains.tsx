@@ -12,6 +12,7 @@ const Domains = () => {
   const { isRegistered, user } = useAuth();
   const { toast } = useToast();
   const [quizStarted, setQuizStarted] = useState<Record<string, boolean>>({});
+  const [isSubmitting,setIsSubmitting] = useState(false);
 
   const domains = [
     {
@@ -65,81 +66,81 @@ const Domains = () => {
       description: "Data Science combines statistics, mathematics, programming, and domain expertise to extract knowledge and insights from structured and unstructured data.",
       icon: "📊",
       color: "from-purple-500 to-indigo-600",
-      quizUrl: "https://wordwall.net/play/91589/881/136",
+      quizUrl: "https://wordwall.net/play/91668/177/937",
       skills: ["Python/R", "Statistical Analysis", "Data Visualization", "Machine Learning", "Big Data"]
     }
   ];
 
-  useEffect(() => {
-    const loadQuizStatus = async () => {
-      if (user && user.email) {
-        try {
-          const { data, error } = await supabase
-            .from('quizzes')
-            .select('domain')
-            .eq('user_email', user.email);
+  // useEffect(() => {
+  //   const loadQuizStatus = async () => {
+  //     if (user && user.email) {
+  //       try {
+  //         const { data, error } = await supabase
+  //           .from('quizzes')
+  //           .select('domain')
+  //           .eq('user_email', user.email);
             
-          if (!error && data) {
-            const startedQuizzes: Record<string, boolean> = {};
-            data.forEach(quiz => {
-              startedQuizzes[quiz.domain] = true;
-            });
-            setQuizStarted(startedQuizzes);
-          }
-        } catch (error) {
-          console.error("Error loading quiz status:", error);
-        }
-      }
-    };
+  //         if (!error && data) {
+  //           const startedQuizzes: Record<string, boolean> = {};
+  //           data.forEach(quiz => {
+  //             startedQuizzes[quiz.domain] = true;
+  //           });
+  //           setQuizStarted(startedQuizzes);
+  //         }
+  //       } catch (error) {
+  //         console.error("Error loading quiz status:", error);
+  //       }
+  //     }
+  //   };
     
-    loadQuizStatus();
-  }, [user]);
+  //   loadQuizStatus();
+  // }, [user]);
 
-  const handleStartQuiz = async (domain: string, quizUrl: string) => {
-    if (!isRegistered) {
-      toast({
-        title: "Registration Required",
-        description: "Please register on the home page to access quizzes.",
-        variant: "destructive",
-      });
-      return;
-    }
+  // // const handleStartQuiz = async (domain: string, quizUrl: string) => {
+  // //   if (!isRegistered) {
+  // //     toast({
+  // //       title: "Registration Required",
+  // //       description: "Please register on the home page to access quizzes.",
+  // //       variant: "destructive",
+  // //     });
+  // //     return;
+  // //   }
     
-    if (!quizUrl) {
-      toast({
-        title: "Quiz Not Available",
-        description: "This quiz will be available soon.",
-      });
-      return;
-    }
+  //   // if (!quizUrl) {
+  //   //   toast({
+  //   //     title: "Quiz Not Available",
+  //   //     description: "This quiz will be available soon.",
+  //   //   });
+  //   //   return;
+  //   // }
     
-    try {
-      if (user?.email) {
-        // Record quiz start in Supabase
-        const { data,error } = await supabase
-          .from('quizzes')
-          .insert([
-            { 
-              user_email: user.email, 
-              domain: domain,
-              started_at: new Date().toISOString()
-            }
-          ]);
+  //   // try {
+  //   //   if (user?.email) {
+  //   //     // Record quiz start in Supabase
+  //   //     const { data,error } = await supabase
+  //   //       .from('quizzes')
+  //   //       .insert([
+  //   //         { 
+  //   //           user_email: user.email, 
+  //   //           domain: domain,
+  //   //           started_at: new Date().toISOString()
+  //   //         }
+  //   //       ]);
           
         
-        setQuizStarted(prev => ({...prev, [domain]: true}));
+  //   //     setQuizStarted(prev => ({...prev, [domain]: true}));
         
-        // Open quiz URL in new tab
-        window.open(quizUrl, '_blank');
-      }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to start quiz",
-        variant: "destructive",
-      });
-    }
-  };
+  //   //     // Open quiz URL in new tab
+  //   //     window.open(quizUrl, '_blank');
+  //   //   }
+  //   // } catch (error: any) {
+  //   //   toast({
+  //   //     title: "Error",
+  //   //     description: error.message || "Failed to start quiz",
+  //   //     variant: "destructive",
+  //   //   });
+  //   // }
+  // };
 
   return (
     <MainLayout>
@@ -212,13 +213,16 @@ const Domains = () => {
                       </div>
                       
                       <div className="mt-8">
-                        <Button
-                          onClick={() => handleStartQuiz(domain.id, domain.quizUrl)}
-                          className="w-full bg-gradient-to-r from-club-purple to-club-pink text-white"
-                          disabled={!isRegistered}
-                        >
-                          {quizStarted[domain.id] ? 'Continue Quiz' : 'Start Quiz'}
-                        </Button>
+                        <a href={domain.quizUrl} onClick={()=>setIsSubmitting(!isSubmitting)}>
+                            <Button            
+                              className="w-full bg-gradient-to-r from-club-purple to-club-pink text-white"
+                              // disabled={!isRegistered}
+                  
+                            >
+                              {/* {quizStarted[domain.id] ? 'Continue Quiz' : 'Start Quiz'} */}
+                              {isSubmitting ? "Starting ..." : "Start Quiz"}  
+                            </Button>
+                        </a>
                         
                         {!isRegistered && (
                           <p className="text-sm text-gray-500 mt-2 text-center">
